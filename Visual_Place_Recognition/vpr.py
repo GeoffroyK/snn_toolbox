@@ -17,7 +17,7 @@ class VPR(nn.Module):
         self.layer = nn.Sequential(
             nn.Flatten(start_dim=0, end_dim=-1),
             nn.Linear(28 * 28, 5, bias=False),
-            neuron.LIFNode(tau=tau)
+            neuron.LIFNode(tau=2., v_threshold=0.8)
         )
 
     def forward(self, x: torch.Tensor) -> nn.Sequential:
@@ -29,13 +29,12 @@ def f_pre(x):
 def f_post(x):
     return torch.clamp(x, -1, 1.)
 
-
 start_epoch = 0
 epoch = 200
 tau_pre = 5.
 tau_post = 5.
 lr = 0.001
-T = 10000
+T = 100
 w_min, w_max = -1., 1.
 
 net = VPR(tau=1.1)
@@ -75,6 +74,7 @@ for t in range(T):
     trace_post.append(learner.trace_post[0][0].numpy())
     #weights.append(net.layer[1].weight[0][0].detach().numpy())
     weights.append(net.layer[1].weight[0].detach().numpy().mean())
+    #print(net.layer[1].weight.shape)
 
 ### MATPLOTLIB ###
 
@@ -82,11 +82,12 @@ t = np.arange(0, T)
 out_spike = np.array(out_spike)
 
 neuron1 = out_spike[:,0]
-# neuron2 = out_spike[:,1]
-# neuron3 = out_spike[:,2]
-# neuron4 = out_spike[:,3]
-# neuron5 = out_spike[:,4]
+neuron2 = out_spike[:,1]
+neuron3 = out_spike[:,2]
+neuron4 = out_spike[:,3]
+neuron5 = out_spike[:,4]
 
+plt.figure()
 plt.tight_layout()
 plt.subplot(4,2,1)
 plt.eventplot(t * in_spike, lineoffsets=0, linewidths=0.5, colors='r')
@@ -122,5 +123,41 @@ plt.plot(t, weights)
 plt.ylabel('$Weight$', rotation=0, labelpad=10)
 plt.xlim(0, T)
 
+plt.figure()
+plt.title("Output neurons activity")
+plt.subplot(5,1,1)
+plt.eventplot(t * neuron1, lineoffsets=0, linewidths=0.5, colors='r')
+plt.yticks([])
+plt.ylabel('$S_{out} N_1$', rotation=0, labelpad=10)
+plt.xticks([])
+plt.xlim(0, T)
+
+plt.subplot(5,1,2)
+plt.eventplot(t * neuron2, lineoffsets=0, linewidths=0.5, colors='r')
+plt.yticks([])
+plt.ylabel('$S_{out} N_2$', rotation=0, labelpad=10)
+plt.xticks([])
+plt.xlim(0, T)
+
+plt.subplot(5,1,3)
+plt.eventplot(t * neuron3, lineoffsets=0, linewidths=0.5, colors='r')
+plt.yticks([])
+plt.ylabel('$S_{out} N_3$', rotation=0, labelpad=10)
+plt.xticks([])
+plt.xlim(0, T)
+
+plt.subplot(5,1,4)
+plt.eventplot(t * neuron4, lineoffsets=0, linewidths=0.5, colors='r')
+plt.yticks([])
+plt.ylabel('$S_{out} N_4$', rotation=0, labelpad=10)
+plt.xticks([])
+plt.xlim(0, T)
+
+plt.subplot(5,1,5)
+plt.eventplot(t * neuron5, lineoffsets=0, linewidths=0.5, colors='r')
+plt.yticks([])
+plt.ylabel('$S_{out} N_5$', rotation=0, labelpad=10)
+plt.xticks([])
+plt.xlim(0, T)
 
 plt.show()
